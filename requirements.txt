@@ -1,4 +1,4 @@
 cv2
 numpy
 icrawler
-matplotlib==3.5.3
+matplotlib

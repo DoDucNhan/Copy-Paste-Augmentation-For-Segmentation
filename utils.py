@@ -39,31 +39,54 @@ def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     return resized_img
 
 
-def crop_object(obj_img, obj_mask, obj_id):
+def contour_area(contours):
+    """Calculate and create a descending sorted list of contour by its area
+    Args:
+        contours: result of cv2.findContours
+
+    Returns:
+        sorted_area: descending array of contour by area
+    """
+    cnt_area = []
+    for cnt in contours:
+        # Calculate the area of the contour
+        cnt_area.append([cv2.contourArea(cnt), cnt])
+
+    cnt_area = np.array(cnt_area)
+    sorted_area = cnt_area[cnt_area[:, 0].argsort()][::-1]
+
+    return sorted_area[:, 1]
+  
+
+def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
     """Crop the object from the obj_img based on the obj_mask
 
     Args:
         obj_img: RGB image of object with shape of (obj_height, obj_width, 3)
-        obj_mask: boolean mask of object with shape of (obj_height, obj_width), 
+        obj_mask: image mask of object with shape of (obj_height, obj_width), 
             True is object area and False is background area
         obj_id: id value of object in obj_mask (int)
 
     Returns:
-        cropped_obj: cropped image of object only (crop_height, crop_width, 3)
-        cropped_mask: boolean mask of the corresponding cropped image (crop_height, crop_width)
+        cropped_obj: list of cropped image of object only 
+        cropped_mask: list of mask of the corresponding cropped image 
     """
-    boolean_mask = obj_mask == obj_id
-    segmentation = np.where(boolean_mask == True)
-    x_min = np.min(segmentation[1])
-    x_max = np.max(segmentation[1])
-    y_min = np.min(segmentation[0])
-    y_max = np.max(segmentation[0])
-
-    # Crop image from just the portion of the image that fits the object
-    cropped_obj = obj_img[y_min:y_max, x_min:x_max, :]
-    # Crop the mask to match the cropped image
-    cropped_mask = obj_mask[y_min:y_max, x_min:x_max] 
-
+    cropped_obj = []
+    cropped_mask = []
+    item_mask = obj_mask == obj_id
+    contours, _ = cv2.findContours(item_mask.astype('u1'), 
+                                           cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # Get the list of sorted contour by area
+    sorted_area = contour_area(contours)
+    # If max_obj exceed number of contours, max_obj = number of contours - 1
+    ## Last contour area is likely noise
+    max_obj = len(sorted_area) - 1 if max_obj >= len(sorted_area) else max_obj 
+    for cnt in sorted_area[:max_obj]:
+        # Get the details of the bounding rectangle of contour
+        x, y, w, h = cv2.boundingRect(cnt)
+        cropped_obj.append(obj_img[y:y + h, x:x + w])
+        cropped_mask.append(obj_mask[y:y + h, x:x + w])
+ 
     return cropped_obj, cropped_mask
 
 

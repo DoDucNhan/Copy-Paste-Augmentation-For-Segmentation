@@ -14,8 +14,8 @@ parser.add_argument("-n", "--num", type=int, default=100,
 	help="number of download images")
 parser.add_argument("-p", "--platform", type=str, default='google',
 	help="cloud platform to crawl (google/flickr)")
-parser.add_argument("-k", "--keywords", nargs='+', required=True,
-	help="list of keywords to crawl images")
+parser.add_argument("-k", "--keywords", type=str, required=True,
+	help="multiple keywords to crawl images seperated by comma")
 
 args = vars(parser.parse_args())
 
@@ -36,8 +36,10 @@ if __name__ == '__main__':
     keywords = get_keywords()
     api_key = get_api_key()
     directories = []
+    keyword_list = args['keywords'].split(',')
+    crawl_option = [keyword.strip() for keyword in keyword_list]
     print("---------------------Start crawling--------------------------")
-    for keyword in args['keywords']:
+    for keyword in crawl_option:
         img_dir = os.path.join(args['dir'], keyword)
         directories.append(img_dir)
         if not os.path.exists(img_dir):
@@ -62,15 +64,15 @@ if __name__ == '__main__':
         for filename in os.listdir(directory):
             img_path = os.path.join(directory, filename)
             img = cv2.imread(img_path)
-            # if img.shape[0] == img.shape[1]:
-            #     width = height = standard_size
-            # elif img.shape[0] > img.shape[1]:
-            #     width, height = None, standard_size
-            # else:
-            #     width, height = standard_size, None
+            if img.shape[0] == img.shape[1]:
+                width = height = standard_size
+            elif img.shape[0] > img.shape[1]:
+                width, height = None, standard_size
+            else:
+                width, height = standard_size, None
 
-            # img = image_resize(img, width, height)
-            img = image_resize(img, standard_size, standard_size)
+            img = image_resize(img, width, height)
+            # img = image_resize(img, standard_size, standard_size)
             cv2.imwrite(img_path, img)
 
     print("---------------------Finish preprocessing-------------------------")

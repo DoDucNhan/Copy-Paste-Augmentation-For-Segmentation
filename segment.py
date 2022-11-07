@@ -1,76 +1,54 @@
-from mmseg.apis import init_segmentor
+from mmseg.apis import init_segmentor, inference_segmentor
 from mmseg.core.evaluation import get_classes
-from mmseg.datasets.pipelines import Compose
-from mmcv.parallel import collate, scatter
-import torch.nn.functional as F
-import matplotlib.pyplot as plt 
-import numpy as np
-import mmcv
+from utils import crop_object
+import argparse
+import cv2
+import os
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--dir", type=str, default='crawl_images',
+    help="path to the downloaded images")
+parser.add_argument("-o", "--out", type=str, default='segmented_object',
+	help="path to output directory for segmented objects")
+
+args = vars(parser.parse_args())
 
 config_file = 'configs/beit/upernet_beit-large_fp16_8x1_640x640_160k_ade20k.py'
 checkpoint_file = 'checkpoints/beit/upernet_beit-large_fp16_8x1_640x640_160k_ade20k-8fc0dd5d.pth'
 
-imgs = 'barrel_3.jpg'
-device = 'cuda'
-
-class LoadImage:
-    """A simple pipeline to load image."""
-
-    def __call__(self, results):
-        """Call function to load images into results.
-
-        Args:
-            results (dict): A result dict contains the file name
-                of the image to be read.
-
-        Returns:
-            dict: ``results`` will be returned containing loaded image.
-        """
-
-        if isinstance(results['img'], str):
-            results['filename'] = results['img']
-            results['ori_filename'] = results['img']
-        else:
-            results['filename'] = None
-            results['ori_filename'] = None
-        img = mmcv.imread(results['img'])
-        results['img'] = img
-        results['img_shape'] = img.shape
-        results['ori_shape'] = img.shape
-        return results
 
 
+if __name__ == "__main__":
+    model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
+    classes = get_classes('ade20k')
+    class2label = {cls: i for i, cls in enumerate(classes)}
 
-model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
-
-
-cfg = model.cfg
-# build the data pipeline
-test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
-test_pipeline = Compose(test_pipeline)
-
-# prepare data
-data = []
-imgs = imgs if isinstance(imgs, list) else [imgs]
-for img in imgs:
-    img_data = dict(img=img)
-    img_data = test_pipeline(img_data)
-    data.append(img_data)
-data = collate(data, samples_per_gpu=len(imgs))
-if next(model.parameters()).is_cuda:
-    # scatter to specified GPU
-    data = scatter(data, [device])[0]
-else:
-    data['img_metas'] = [i.data[0] for i in data['img_metas']]
-
-
-new_probs = model.inference(data['img'][0], data['img_metas'][0], True)
-
-output = F.softmax(new_probs, dim=1)
-barrel = output[0, 111, :, :]
-brl_cpu = barrel.cpu().detach().numpy()
-
-threshold = 0.01
-new_img = np.where(brl_cpu >= threshold, 1, 0)
-plt.imshow(new_img, cmap='gray')
+    # Get all image filenames in every object folder
+    for obj_dir in os.listdir(args['dir']):
+        img_paths = []
+        img_list = []
+        save_path = os.path.join(args['out'], obj_dir)
+        for filename in os.listdir(obj_dir):
+            img_path = os.path.join(args['dir'], obj_dir, filename)
+            image = cv2.imread(img_path)
+            img_paths.append(img_path)
+            img_list.append(image)
+            
+        
+        results = inference_segmentor(model, img_path)
+        count = 0
+        for i, seg_result in enumerate(results):
+            item_mask = seg_result == class2label[obj_dir]
+            # Skip if no object found in image
+            if (~item_mask).all():
+                continue
+            
+            cropped_images, cropped_masks = crop_object(img_list[i], seg_result, class2label[obj_dir], 2)
+            for i in range(cropped_images):
+                count += 1
+                filename = f"{count:0>4}.jpg"
+                img_path = os.path.join(save_path, "image", filename)
+                mask_path = os.path.join(save_path, "mask", filename)
+                cv2.imwrite(img_path, cropped_images[i])
+                cv2.imwrite(mask_path, cropped_masks[i])
