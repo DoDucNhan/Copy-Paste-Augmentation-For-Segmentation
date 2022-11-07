@@ -1,3 +1,10 @@
+# Generated directories
+crawl_images/
+ADE20k-custom/
+
+# Pytorch model files
+*.pth
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
