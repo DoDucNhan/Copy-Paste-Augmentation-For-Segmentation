@@ -39,23 +39,23 @@ def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     return resized_img
 
 
-def contour_area(contours):
+def sort_contour(contours):
     """Calculate and create a descending sorted list of contour by its area
     Args:
         contours: result of cv2.findContours
 
     Returns:
-        sorted_area: descending array of contour by area
+        sorted_contours: descending array of contour by area
     """
     cnt_area = []
     for cnt in contours:
         # Calculate the area of the contour
-        cnt_area.append([cv2.contourArea(cnt), cnt])
+        cnt_area.append(cv2.contourArea(cnt))
 
-    cnt_area = np.array(cnt_area)
-    sorted_area = cnt_area[cnt_area[:, 0].argsort()][::-1]
+    cnt_area = np.array(cnt_area, dtype='float')
+    sorted_contours = np.array(contours)[np.argsort(cnt_area)[::-1]]
 
-    return sorted_area[:, 1]
+    return sorted_contours
   
 
 def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
@@ -75,13 +75,17 @@ def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
     cropped_mask = []
     item_mask = obj_mask == obj_id
     contours, _ = cv2.findContours(item_mask.astype('u1'), 
-                                           cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                                    cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # Get the list of sorted contour by area
-    sorted_area = contour_area(contours)
+    sorted_contours = sort_contour(contours)
     # If max_obj exceed number of contours, max_obj = number of contours - 1
     ## Last contour area is likely noise
-    max_obj = len(sorted_area) - 1 if max_obj >= len(sorted_area) else max_obj 
-    for cnt in sorted_area[:max_obj]:
+    if max_obj >= len(sorted_contours):
+        if len(sorted_contours) == 1:
+            max_obj = 1
+        else:
+            max_obj = len(sorted_contours) - 1
+    for cnt in sorted_contours[:max_obj]:
         # Get the details of the bounding rectangle of contour
         x, y, w, h = cv2.boundingRect(cnt)
         cropped_obj.append(obj_img[y:y + h, x:x + w])

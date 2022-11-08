@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
         if args['platform'] == 'google':
             google_crawler = GoogleImageCrawler(storage={'root_dir': img_dir})
-            google_crawler.crawl(keyword=keywords[keyword], max_num=args['num'])  
+            google_crawler.crawl(keyword=keywords[keyword], max_num=args['num'], min_size=(500,500))  
         else:
             flickr_crawler = FlickrImageCrawler(apikey=api_key,
                                         storage={'root_dir': img_dir})
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     print("---------------------Finish crawling-------------------------")
 
     # start preprocessing
-    standard_size = 448
+    standard_size = 720
     print("---------------------Start preprocessing--------------------------")
     for directory in directories:
     # for keyword in args['keywords']:

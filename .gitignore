@@ -1,6 +1,7 @@
 # Generated directories
 crawl_images/
-ADE20k-custom/
+ADE20K-custom/
+segmented_objects/
 
 # Pytorch model files
 *.pth
