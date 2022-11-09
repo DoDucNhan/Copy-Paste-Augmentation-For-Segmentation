@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     print("---------------------Finish crawling-------------------------")
 
-    # start preprocessing
+    # start preprocessing - resize image to standard size
     standard_size = 720
     print("---------------------Start preprocessing--------------------------")
     for directory in directories:
