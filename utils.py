@@ -117,6 +117,11 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
     assert 0 <= paste_pos[0] <= bg_img.shape[1] \
         and 0 <= paste_pos[1] <= bg_img.shape[0], "paste position out of range"
 
+    boolean_mask = obj_mask == obj_id # True is object area and False is background area
+    # All false means no object in image, return original image and mask
+    if (~boolean_mask).all():
+        return bg_img, bg_mask
+
     res_img = bg_img.copy()
     res_mask = bg_mask.copy()
     bg_height, bg_width = res_img.shape[:2]
@@ -126,7 +131,6 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
     x, y = paste_pos[0] - obj_width // 2, paste_pos[1] - obj_height // 2
 
     # Separate object from obj_img
-    boolean_mask = obj_mask == obj_id # True is object area and False is background area
     mask_rgb = np.stack([boolean_mask, boolean_mask, boolean_mask], axis=2)
     obj = obj_img * mask_rgb
     
@@ -150,7 +154,7 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
         x = 0
         if y >= 0:
             height_part = obj_height - max(0, y + obj_height - bg_height) 
-            paste_area_mask = ~mask_rgb[:height_part, obj_width -width_part:, :]
+            paste_area_mask = ~mask_rgb[:height_part, obj_width - width_part:, :]
             obj_part = obj[:height_part, obj_width - width_part:, :]
             mask_part = obj_mask[:height_part, obj_width - width_part:]
         else:
@@ -159,7 +163,14 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
             obj_part = obj[obj_height - height_part:, obj_width - width_part:, :]
             mask_part = obj_mask[obj_height - height_part:, obj_width - width_part:]
             y = 0
-        
+    
+
+    # Check the max size of background image and adjust the size of object to paste 
+    max_h, max_w = res_img[y:y + height_part, x:x + width_part, :].shape[:2]
+    paste_area_mask =  paste_area_mask[:max_h, :max_w, :]
+    obj_part = obj_part[:max_h, :max_w, :]
+    mask_part = mask_part[:max_h, :max_w]
+
     res_img[y:y + height_part, x:x + width_part, :] \
         = res_img[y:y + height_part, x:x + width_part, :] * paste_area_mask + obj_part
     res_mask[y:y + height_part, x:x + width_part] \

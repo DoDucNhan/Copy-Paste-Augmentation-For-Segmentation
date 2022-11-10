@@ -32,19 +32,21 @@ if __name__ == "__main__":
         obj_path = os.path.join(args['dir'], obj_dir)
         save_path = os.path.join(args['out'], obj_dir)
 
-        out_image_path = os.path.join(save_path, "image")
-        out_mask_path = os.path.join(save_path, "mask")
+        # Create save directory for segmented object
+        out_image_path = os.path.join(save_path, "images")
+        out_mask_path = os.path.join(save_path, "masks")
         if not os.path.exists(out_image_path):
             os.makedirs(out_image_path)
         if not os.path.exists(out_mask_path):
             os.makedirs(out_mask_path)
 
-        count = 0
+        count = 0 # counter for image name
         for filename in os.listdir(obj_path):
             img_path = os.path.join(obj_path, filename)
             image = cv2.imread(img_path)
             
             print(f"Image {img_path}")
+            # Segmentation
             result = inference_segmentor(model, img_path)
 
             seg_result = result[0]
@@ -53,12 +55,14 @@ if __name__ == "__main__":
             if (~item_mask).all():
                 print(f"Skipping image {img_path}")
                 continue
-
+            
+            # Crop objects from image
             cropped_images, cropped_masks = crop_object(image, seg_result, class2label[obj_dir], 2)
             for i in range(len(cropped_images)):
                 count += 1
                 filename = f"{count:0>4}.jpg"
                 image_name = os.path.join(out_image_path, filename)
                 mask_name = os.path.join(out_mask_path, filename)
+                # Save object image and its mask
                 cv2.imwrite(image_name, cropped_images[i])
                 cv2.imwrite(mask_name, cropped_masks[i])
