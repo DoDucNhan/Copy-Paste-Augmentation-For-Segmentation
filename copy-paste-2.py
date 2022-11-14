@@ -70,7 +70,6 @@ if __name__ == "__main__":
             
             logger.info(f"image name: {image_name}")
             logger.info(f"object name: {obj_img_name}")
-            logger.info("--------------------------------")
             
             # print(f"image name: {image_name}")
             # print(f"mask name: {mask_name}")
@@ -86,6 +85,8 @@ if __name__ == "__main__":
 
             count += 1
             filename = f"ADE_train_{count:0>8}"
+            logger.info(f"save image name: {filename}")
+            logger.info("--------------------------------")
             save_img_path = os.path.join(train_img_path, filename + ".jpg")
             save_mask_path = os.path.join(train_ann_path, filename + ".png")
             cv2.imwrite(save_img_path, new_img)
