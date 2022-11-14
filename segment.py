@@ -60,9 +60,9 @@ if __name__ == "__main__":
             cropped_images, cropped_masks = crop_object(image, seg_result, class2label[obj_dir], 2)
             for i in range(len(cropped_images)):
                 count += 1
-                filename = f"{count:0>4}.jpg"
-                image_name = os.path.join(out_image_path, filename)
-                mask_name = os.path.join(out_mask_path, filename)
+                filename = f"{count:0>4}"
+                image_name = os.path.join(out_image_path, filename + ".jpg")
+                mask_name = os.path.join(out_mask_path, filename + ".png")
                 # Save object image and its mask
                 cv2.imwrite(image_name, cropped_images[i])
                 cv2.imwrite(mask_name, cropped_masks[i])
