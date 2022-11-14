@@ -133,6 +133,7 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
     # Separate object from obj_img
     mask_rgb = np.stack([boolean_mask, boolean_mask, boolean_mask], axis=2)
     obj = obj_img * mask_rgb
+    mask = obj_mask * boolean_mask
     
     if x >= 0:
         # width_part - part of the image which overlaps background along x-axis
@@ -142,12 +143,12 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
             height_part = obj_height - max(0, y + obj_height - bg_height) 
             paste_area_mask = ~mask_rgb[:height_part, :width_part, :]
             obj_part = obj[:height_part, :width_part, :]
-            mask_part = obj_mask[:height_part, :width_part]
+            mask_part = mask[:height_part, :width_part]
         else:
             height_part = obj_height + y
             paste_area_mask = ~mask_rgb[obj_height - height_part:, :width_part, :]
             obj_part = obj[obj_height - height_part:, :width_part, :]
-            mask_part = obj_mask[obj_height - height_part:, :width_part]
+            mask_part = mask[obj_height - height_part:, :width_part]
             y = 0
     else:
         width_part = obj_width + x
@@ -156,12 +157,12 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
             height_part = obj_height - max(0, y + obj_height - bg_height) 
             paste_area_mask = ~mask_rgb[:height_part, obj_width - width_part:, :]
             obj_part = obj[:height_part, obj_width - width_part:, :]
-            mask_part = obj_mask[:height_part, obj_width - width_part:]
+            mask_part = mask[:height_part, obj_width - width_part:]
         else:
             height_part = obj_height + y
             paste_area_mask = ~mask_rgb[obj_height - height_part:, obj_width - width_part:, :]
             obj_part = obj[obj_height - height_part:, obj_width - width_part:, :]
-            mask_part = obj_mask[obj_height - height_part:, obj_width - width_part:]
+            mask_part = mask[obj_height - height_part:, obj_width - width_part:]
             y = 0
     
 
