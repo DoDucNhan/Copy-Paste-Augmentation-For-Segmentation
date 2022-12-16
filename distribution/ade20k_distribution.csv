@@ -1,0 +1,151 @@
+,all,train,val
+wall,12836,11664,1172
+building,6658,6046,612
+sky,9061,8265,796
+floor,10253,9336,917
+tree,7319,6678,641
+ceiling,7247,6604,643
+road,4431,4023,408
+bed,2105,1906,199
+windowpane,5148,4688,460
+grass,2648,2423,225
+cabinet,3168,2874,294
+sidewalk,3378,3068,310
+person,5601,5075,526
+earth,1994,1804,190
+door,7462,6666,796
+table,4680,4269,411
+mountain,1851,1691,160
+plant,4440,3999,441
+curtain,2366,2149,217
+chair,3579,3261,318
+car,3470,3164,306
+water,784,709,75
+painting,3611,3296,315
+sofa,1297,1191,106
+shelf,1678,1516,162
+house,736,667,69
+sea,708,651,57
+mirror,2071,1847,224
+rug,1286,1158,128
+field,524,480,44
+armchair,1270,1172,98
+seat,1476,1292,184
+fence,1524,1386,138
+desk,759,698,61
+rock,854,781,73
+wardrobe,423,380,43
+lamp,3391,3089,302
+bathtub,441,404,37
+railing,903,804,99
+cushion,1606,1453,153
+base,448,411,37
+box,1602,1440,162
+column,877,800,77
+signboard,2948,2650,298
+chest of drawers,595,549,46
+counter,403,367,36
+sand,341,311,30
+sink,1303,1181,122
+skyscraper,310,287,23
+fireplace,506,468,38
+refrigerator,445,402,43
+grandstand,142,130,12
+path,625,561,64
+stairs,982,880,102
+runway,98,86,12
+case,183,172,11
+pool table,216,198,18
+pillow,1039,930,109
+screen door,157,139,18
+stairway,616,564,52
+river,346,320,26
+bridge,290,261,29
+bookcase,297,275,22
+blind,395,335,60
+coffee table,867,792,75
+toilet,444,395,49
+flower,1447,1309,138
+book,1225,1112,113
+hill,293,266,27
+bench,725,659,66
+countertop,362,331,31
+stove,587,531,56
+palm,405,369,36
+kitchen island,153,144,9
+computer,294,265,29
+swivel chair,357,324,33
+boat,331,304,27
+bar,190,170,20
+arcade machine,74,68,6
+hovel,73,65,8
+bus,273,248,25
+towel,541,492,49
+light,2779,2510,269
+truck,479,440,39
+tower,165,147,18
+chandelier,639,583,56
+awning,594,533,61
+streetlight,2228,1989,239
+booth,76,71,5
+television receiver,671,618,53
+airplane,147,135,12
+dirt track,88,83,5
+apparel,195,178,17
+pole,1107,1003,104
+land,194,182,12
+bannister,502,452,50
+escalator,48,42,6
+ottoman,338,307,31
+bottle,1079,965,114
+buffet,130,117,13
+poster,389,354,35
+stage,117,108,9
+van,612,557,55
+ship,56,52,4
+fountain,104,99,5
+conveyer belt,61,57,4
+canopy,323,292,31
+washer,86,77,9
+plaything,378,340,38
+swimming pool,69,66,3
+stool,514,465,49
+barrel,54,50,4
+basket,697,622,75
+waterfall,89,80,9
+tent,62,59,3
+bag,603,531,72
+minibike,312,282,30
+cradle,80,73,7
+oven,479,435,44
+ball,161,136,25
+food,140,116,24
+step,297,266,31
+tank,70,58,12
+trade name,501,418,83
+microwave,362,319,43
+pot,1332,1193,139
+animal,120,97,23
+bicycle,383,347,36
+lake,57,52,5
+dishwasher,268,246,22
+screen,121,108,13
+blanket,231,201,30
+sculpture,306,285,21
+hood,295,268,27
+sconce,1128,1020,108
+vase,1404,1282,122
+traffic light,593,528,65
+tray,510,453,57
+ashcan,771,671,100
+fan,441,397,44
+pier,100,92,8
+crt screen,246,228,18
+plate,629,570,59
+monitor,239,217,22
+bulletin board,225,206,19
+shower,144,130,14
+radiator,206,178,28
+glass,561,504,57
+clock,871,775,96
+flag,477,421,56
