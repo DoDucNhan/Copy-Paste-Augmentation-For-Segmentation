@@ -64,7 +64,7 @@ def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
     Args:
         obj_img: RGB image of object with shape of (obj_height, obj_width, 3)
         obj_mask: image mask of object with shape of (obj_height, obj_width), 
-            True is object area and False is background area
+            obj_id value is object area and 0 is background area
         obj_id: id value of object in obj_mask (int)
 
     Returns:
