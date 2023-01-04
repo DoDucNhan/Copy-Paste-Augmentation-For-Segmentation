@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+#-----------------------PREPROCESSING--------------------------
 
 def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     """Resize image with original size ratio if one dimension is not specified
@@ -37,6 +38,9 @@ def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     resized_img = cv2.resize(image, dim, interpolation = inter)
 
     return resized_img
+
+
+#-----------------------COPY-PASTE-METHOD--------------------------
 
 
 def sort_contour(contours):
@@ -177,3 +181,44 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
     res_mask[y:y + height_part, x:x + width_part] \
         = res_mask[y:y + height_part, x:x + width_part] * paste_area_mask[:, :, 0] + mask_part
     return res_img, res_mask
+
+
+#-----------------------MONTAGE-METHOD--------------------------
+
+def build_montage(img_square_s, img_square_l, img_tall, img_wide, mask=False):
+    """Generate a montage image with size of 224x224
+
+    Args:
+        img_square_s: input image will be resize to 
+            small square image with size 64x64
+        img_square_l: input image will be resize to 
+            large square image with size 64x64160x160
+        img_tall: input image will be resize to 
+            tall image with size 160x64 
+        img_wide: input image will be resize to 
+            wide square image with size 64x160
+        mask: False if inputs are images, 
+            True if inputs are segmentation masks
+
+    Returns:
+        montage_image: the montage image with channel=3 if mask=False,
+            channel=1 of mask=True
+    """
+    # Start with black canvas to draw images onto
+    if mask:
+        montage_image = np.zeros(shape=(224, 224), dtype=np.uint8)
+    else:
+        montage_image = np.zeros(shape=(224, 224, 3), dtype=np.uint8)
+
+    # Resize images for montage
+    top_left_img = cv2.resize(img_square_s, (64, 64))
+    top_right_img = cv2.resize(img_wide, (160, 64))
+    bottom_left_img = cv2.resize(img_tall, (64, 160))
+    bottom_right_img = cv2.resize(img_square_l, (160, 160))
+
+    montage_image[0:64, 0:64] = top_left_img
+    montage_image[64:, 0:64] = bottom_left_img
+    montage_image[0:64:, 64:] = top_right_img
+    montage_image[64:, 64:] = bottom_right_img
+
+    return montage_image
