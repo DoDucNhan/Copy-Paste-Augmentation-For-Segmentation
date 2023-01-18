@@ -78,7 +78,6 @@ if __name__ == "__main__":
             if not np.any(object_mask) or obj_pixel_ratio < alpha:
                 logger.info(f"Skipping image {img_path}")
                 continue
-            
 
             logger.info("--------------------------------")
             # Crop objects from image

@@ -1,5 +1,8 @@
 import cv2
+import mmcv
 import numpy as np
+from mmcv.parallel import collate, scatter
+from mmseg.datasets.pipelines import Compose
 
 #-----------------------PREPROCESSING--------------------------
 
@@ -38,9 +41,6 @@ def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     resized_img = cv2.resize(image, dim, interpolation = inter)
 
     return resized_img
-
-
-#-----------------------COPY-PASTE-METHOD--------------------------
 
 
 def sort_contour(contours):
@@ -96,6 +96,62 @@ def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
         cropped_mask.append(obj_mask[y:y + h, x:x + w])
  
     return cropped_obj, cropped_mask
+
+
+
+#-----------------------UTILS FOR SEGMENTATION PHASE------------------------
+
+class LoadImage:
+    """A simple pipeline to load image."""
+
+    def __call__(self, results):
+        """Call function to load images into results.
+
+        Args:
+            results (dict): A result dict contains the file name
+                of the image to be read.
+
+        Returns:
+            dict: ``results`` will be returned containing loaded image.
+        """
+
+        if isinstance(results['img'], str):
+            results['filename'] = results['img']
+            results['ori_filename'] = results['img']
+        else:
+            results['filename'] = None
+            results['ori_filename'] = None
+        img = mmcv.imread(results['img'])
+        results['img'] = img
+        results['img_shape'] = img.shape
+        results['ori_shape'] = img.shape
+        return results
+
+
+def get_image_data(model, img_path):
+    cfg = model.cfg
+    # build the data pipeline
+    test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
+    test_pipeline = Compose(test_pipeline)
+
+    # prepare data
+    data = []
+    imgs = img_path if isinstance(img_path, list) else [img_path]
+    for img in imgs:
+        img_data = dict(img=img)
+        img_data = test_pipeline(img_data)
+        data.append(img_data)
+    data = collate(data, samples_per_gpu=len(imgs))
+    if next(model.parameters()).is_cuda:
+        # scatter to specified GPU
+        data = scatter(data, ['cuda'])[0]
+    else:
+        data['img_metas'] = [i.data[0] for i in data['img_metas']]
+    
+    return data
+
+
+#-----------------------COPY-PASTE-METHOD--------------------------
 
 
 def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
@@ -184,6 +240,7 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
 
 
 #-----------------------MONTAGE-METHOD--------------------------
+
 
 def build_montage(img_square_s, img_square_l, img_tall, img_wide, mask=False):
     """Generate a montage image with size of 224x224
