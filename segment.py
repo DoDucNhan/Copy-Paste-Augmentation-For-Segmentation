@@ -77,11 +77,12 @@ if __name__ == "__main__":
             obj_pixel_ratio = np.sum(object_mask != 0) / (object_mask.shape[0] * object_mask.shape[1])
             if not np.any(object_mask) or obj_pixel_ratio < alpha:
                 logger.info(f"Skipping image {img_path}")
+                logger.info("--------------------------------")
                 continue
 
             logger.info("--------------------------------")
             # Crop objects from image
-            cropped_images, cropped_masks = crop_object(image, object_mask, object_id)
+            cropped_images, cropped_masks = crop_object(image, object_mask[0], object_id)
             for i in range(len(cropped_images)):
                 count += 1
                 filename = f"{count:0>4}"

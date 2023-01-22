@@ -70,7 +70,7 @@ if __name__ == "__main__":
             # Choose random object to paste
             idx = random.randint(0, num_files - 1)
             obj_img_name = osp.join(obj_img_path, obj_names[idx])
-            obj_mask_name = osp.join(obj_mask_path, obj_names[idx])
+            obj_mask_name = osp.join(obj_mask_path, obj_names[idx].split('.')[0] + ".png")
 
             # Load background image and mask
             org_img = cv2.imread(image_name)

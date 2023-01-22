@@ -79,7 +79,7 @@ def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
     cropped_mask = []
     item_mask = obj_mask == obj_id
     contours, _ = cv2.findContours(item_mask.astype('u1'), 
-                                    cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                                   cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # Get the list of sorted contour by area
     sorted_contours = sort_contour(contours)
     # If max_obj exceed number of contours, max_obj = number of contours - 1

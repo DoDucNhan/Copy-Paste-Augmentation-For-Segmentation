@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
     if not osp.exists(args['out']):
         os.makedirs(f"{args['out']}/images")
-        os.makedirs(f"{args['out']}/annotations")
+        os.makedirs(f"{args['out']}/masks")
 
     # Path for saving new images and masks
     out_img_path = f"{args['out']}/images"
@@ -55,8 +55,8 @@ if __name__ == "__main__":
         masks = []
         # Get image name
         for name in img_name:
-            image_name = osp.join(aug_img_path, img_name)
-            mask_name = osp.join(aug_ann_path, img_name.split('.')[0] + ".png")
+            image_name = osp.join(aug_img_path, name)
+            mask_name = osp.join(aug_ann_path, name.split('.')[0] + ".png")
 
             logger.info(f"image name: {image_name}")
 
