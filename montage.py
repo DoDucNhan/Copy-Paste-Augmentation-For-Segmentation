@@ -65,16 +65,38 @@ if __name__ == "__main__":
 
         img1, img2, img3, img4 = imgs
         mask1, mask2, mask3, mask4 = masks
-        # Check size
-         
+        # Check size and sort images to order: tall, wide, square large, square small
+        sorted_imgs = []
+        sorted_masks = []
+        for t in range(3):
+            idx = 0
+            max_val = 0
+            for i in range(len(imgs)):
+                img_h, img_w = imgs[i].shape[:2]
+                diff = abs(img_h - img_w)
+                if t == 0:
+                    if img_h > img_w:
+                        if diff > max_val:
+                            idx = i
+                            max_val = diff
+                elif t == 1:
+                    if img_w > img_h:
+                        if diff > max_val:
+                            idx = i
+                            max_val = diff
+                else:
+                    area = img_h * img_w
+                    if area > max_val:
+                        idx = i
+                        max_val = area
+            
+            sorted_imgs.append(imgs.pop(idx))
+            sorted_masks.append(masks.pop(idx))
+                
+        # Append last image and mask
+        sorted_imgs.append(imgs.pop(0))
+        sorted_masks.append(masks.pop(0))
         
-        
-        
-        # print(f"image name: {image_name}")
-        # print(f"mask name: {mask_name}")
-        # print(f"object name: {obj_img_name}")
-        # print(f"object mask name: {obj_mask_name}")
-        # print("--------------------------------")
 
         new_img = build_montage(img1, img2, img3, img4)
         new_mask = build_montage(mask1, mask2, mask3, mask4, True)
