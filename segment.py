@@ -16,6 +16,8 @@ parser.add_argument("-d", "--dir", type=str, default='crawl_images',
     help="path to the downloaded images")
 parser.add_argument("-o", "--out", type=str, default='segmented_objects',
 	help="path to output directory for segmented objects")
+parser.add_argument("-a", "--alpha", type=float, default=0.2,
+	help="percentage of confident pixel prediction")
 
 args = vars(parser.parse_args())
 
@@ -62,7 +64,7 @@ if __name__ == "__main__":
             
             logger.info(f"Image {img_path}")
             # Segmentation
-            alpha = 0.2
+            alpha = args['alpha']
             data = get_image_data(model, img_path)
             with torch.no_grad():
                 class_softmax = model.inference(data['img'][0], data['img_metas'][0], True)
@@ -75,10 +77,10 @@ if __name__ == "__main__":
             object_mask = np.where(refine_output == object_id, object_id, 0)
             # Skip if object pixels is too little compared to whole image
             obj_pixel_ratio = np.sum(object_mask != 0) / (object_mask.shape[0] * object_mask.shape[1])
-            if not np.any(object_mask) or obj_pixel_ratio < alpha:
-                logger.info(f"Skipping image {img_path}")
-                logger.info("--------------------------------")
-                continue
+            # if obj_pixel_ratio < 0.1:
+            #     logger.info(f"Skipping image {img_path}")
+            #     logger.info("--------------------------------")
+            #     continue
 
             logger.info("--------------------------------")
             # Crop objects from image
