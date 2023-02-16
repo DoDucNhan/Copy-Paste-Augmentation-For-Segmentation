@@ -2,6 +2,9 @@
 crawl_images/
 ADE20K-custom/
 segmented_objects/
+augmented_images/
+montage_images/
+configs/
 
 # Pytorch model files
 *.pth

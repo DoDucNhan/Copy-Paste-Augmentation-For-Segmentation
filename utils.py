@@ -1,6 +1,10 @@
 import cv2
+import mmcv
 import numpy as np
+from mmcv.parallel import collate, scatter
+from mmseg.datasets.pipelines import Compose
 
+#-----------------------PREPROCESSING--------------------------
 
 def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     """Resize image with original size ratio if one dimension is not specified
@@ -64,7 +68,7 @@ def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
     Args:
         obj_img: RGB image of object with shape of (obj_height, obj_width, 3)
         obj_mask: image mask of object with shape of (obj_height, obj_width), 
-            True is object area and False is background area
+            obj_id value is object area and 0 is background area
         obj_id: id value of object in obj_mask (int)
 
     Returns:
@@ -75,7 +79,7 @@ def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
     cropped_mask = []
     item_mask = obj_mask == obj_id
     contours, _ = cv2.findContours(item_mask.astype('u1'), 
-                                    cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                                   cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # Get the list of sorted contour by area
     sorted_contours = sort_contour(contours)
     # If max_obj exceed number of contours, max_obj = number of contours - 1
@@ -92,6 +96,62 @@ def crop_object(obj_img, obj_mask, obj_id, max_obj=1):
         cropped_mask.append(obj_mask[y:y + h, x:x + w])
  
     return cropped_obj, cropped_mask
+
+
+
+#-----------------------UTILS FOR SEGMENTATION PHASE------------------------
+
+class LoadImage:
+    """A simple pipeline to load image."""
+
+    def __call__(self, results):
+        """Call function to load images into results.
+
+        Args:
+            results (dict): A result dict contains the file name
+                of the image to be read.
+
+        Returns:
+            dict: ``results`` will be returned containing loaded image.
+        """
+
+        if isinstance(results['img'], str):
+            results['filename'] = results['img']
+            results['ori_filename'] = results['img']
+        else:
+            results['filename'] = None
+            results['ori_filename'] = None
+        img = mmcv.imread(results['img'])
+        results['img'] = img
+        results['img_shape'] = img.shape
+        results['ori_shape'] = img.shape
+        return results
+
+
+def get_image_data(model, img_path):
+    cfg = model.cfg
+    # build the data pipeline
+    test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
+    test_pipeline = Compose(test_pipeline)
+
+    # prepare data
+    data = []
+    imgs = img_path if isinstance(img_path, list) else [img_path]
+    for img in imgs:
+        img_data = dict(img=img)
+        img_data = test_pipeline(img_data)
+        data.append(img_data)
+    data = collate(data, samples_per_gpu=len(imgs))
+    if next(model.parameters()).is_cuda:
+        # scatter to specified GPU
+        data = scatter(data, ['cuda'])[0]
+    else:
+        data['img_metas'] = [i.data[0] for i in data['img_metas']]
+    
+    return data
+
+
+#-----------------------COPY-PASTE-METHOD--------------------------
 
 
 def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
@@ -177,3 +237,45 @@ def paste_object(bg_img, bg_mask, obj_img, obj_mask, obj_id, paste_pos):
     res_mask[y:y + height_part, x:x + width_part] \
         = res_mask[y:y + height_part, x:x + width_part] * paste_area_mask[:, :, 0] + mask_part
     return res_img, res_mask
+
+
+#-----------------------MONTAGE-METHOD--------------------------
+
+
+def build_montage(img_square_s, img_square_l, img_tall, img_wide, mask=False):
+    """Generate a montage image with size of 224x224
+
+    Args:
+        img_square_s: input image will be resize to 
+            small square image with size 64x64
+        img_square_l: input image will be resize to 
+            large square image with size 64x64160x160
+        img_tall: input image will be resize to 
+            tall image with size 160x64 
+        img_wide: input image will be resize to 
+            wide square image with size 64x160
+        mask: False if inputs are images, 
+            True if inputs are segmentation masks
+
+    Returns:
+        montage_image: the montage image with channel=3 if mask=False,
+            channel=1 of mask=True
+    """
+    # Start with black canvas to draw images onto
+    if mask:
+        montage_image = np.zeros(shape=(224, 224), dtype=np.uint8)
+    else:
+        montage_image = np.zeros(shape=(224, 224, 3), dtype=np.uint8)
+
+    # Resize images for montage
+    top_left_img = cv2.resize(img_square_s, (64, 64))
+    top_right_img = cv2.resize(img_wide, (160, 64))
+    bottom_left_img = cv2.resize(img_tall, (64, 160))
+    bottom_right_img = cv2.resize(img_square_l, (160, 160))
+
+    montage_image[0:64, 0:64] = top_left_img
+    montage_image[64:, 0:64] = bottom_left_img
+    montage_image[0:64:, 64:] = top_right_img
+    montage_image[64:, 64:] = bottom_right_img
+
+    return montage_image
