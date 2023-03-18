@@ -57,6 +57,16 @@ if __name__ == "__main__":
             os.makedirs(out_mask_path)
 
         object_id = class2label[obj_dir]
+        # Adjustments for 2 specific classes "step" and "land"
+        is_step, is_land = False, False
+        if obj_dir == "step":
+            object_id = class2label["stairway"]
+            is_step = True
+
+        if obj_dir == "land":
+            object_id = class2label["earth"]
+            is_land = True
+
         count = 0 # counter for image name
         for filename in os.listdir(obj_path):
             img_path = osp.join(obj_path, filename)
@@ -77,10 +87,10 @@ if __name__ == "__main__":
             object_mask = np.where(refine_output == object_id, object_id, 0)
             # Skip if object pixels is too little compared to whole image
             obj_pixel_ratio = np.sum(object_mask != 0) / (object_mask.shape[0] * object_mask.shape[1])
-            # if obj_pixel_ratio < 0.1:
-            #     logger.info(f"Skipping image {img_path}")
-            #     logger.info("--------------------------------")
-            #     continue
+            if obj_pixel_ratio < 0.1:
+                logger.info(f"Skipping image {img_path}")
+                logger.info("--------------------------------")
+                continue
 
             logger.info("--------------------------------")
             # Crop objects from image
@@ -91,5 +101,21 @@ if __name__ == "__main__":
                 image_name = osp.join(out_image_path, filename + ".jpg")
                 mask_name = osp.join(out_mask_path, filename + ".png")
                 # Save object image and its mask
-                cv2.imwrite(image_name, cropped_images[i])
-                cv2.imwrite(mask_name, cropped_masks[i])
+                cropped_image = cropped_images[i]
+                cropped_mask = cropped_masks[i]
+                # Deal with 2 specific classes: step and land by modifying from stairway and earth
+                if is_step:
+                    height, width = cropped_masks.shape
+                    # Crop 1/3 bottom of stairway object to get step object
+                    if height > 150:
+                        crop_pos = int(height*2/3)
+                        cropped_image = cropped_image[crop_pos:, :, :]
+                        cropped_mask = cropped_mask[crop_pos:, :]
+
+                    cropped_mask = np.where(cropped_masks[i] == object_id, class2label['step'], 0)
+
+                if is_land:
+                    cropped_mask = np.where(cropped_masks[i] == object_id, class2label['land'], 0)
+
+                cv2.imwrite(image_name, cropped_image)
+                cv2.imwrite(mask_name, cropped_mask)
