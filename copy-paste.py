@@ -92,7 +92,7 @@ if __name__ == "__main__":
             x = random.randint(0, org_img.shape[1] - 1)
             y = random.randint(0, org_img.shape[0] - 1)
             new_img, new_mask = paste_object(org_img, org_mask, \
-                obj_img, obj_mask, class2label[obj_dir], (x, y))
+                obj_img, obj_mask, class2label[obj_dir] + 1, (x, y))
 
             count += 1
             filename = f"ADE_train_{count:0>8}"

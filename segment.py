@@ -104,6 +104,7 @@ if __name__ == "__main__":
                 cropped_image = cropped_images[i]
                 cropped_mask = cropped_masks[i]
                 # Deal with 2 specific classes: step and land by modifying from stairway and earth
+                cropped_mask = np.where(cropped_mask == object_id, object_id + 1, 0)
                 if is_step:
                     height, width = cropped_masks.shape
                     # Crop 1/3 bottom of stairway object to get step object
@@ -112,10 +113,10 @@ if __name__ == "__main__":
                         cropped_image = cropped_image[crop_pos:, :, :]
                         cropped_mask = cropped_mask[crop_pos:, :]
 
-                    cropped_mask = np.where(cropped_masks[i] == object_id, class2label['step'], 0)
+                    cropped_mask = np.where(cropped_mask == object_id, class2label['step'] + 1, 0)
 
                 if is_land:
-                    cropped_mask = np.where(cropped_masks[i] == object_id, class2label['land'], 0)
+                    cropped_mask = np.where(cropped_mask == object_id, class2label['land'] + 1, 0)
 
                 cv2.imwrite(image_name, cropped_image)
                 cv2.imwrite(mask_name, cropped_mask)
