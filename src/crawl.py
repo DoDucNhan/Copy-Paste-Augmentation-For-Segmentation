@@ -21,13 +21,13 @@ args = vars(parser.parse_args())
 
 
 def get_api_key():
-    with open("flickr_key.json") as f:
+    with open("files/flickr_key.json") as f:
         keys = json.load(f)
         return keys['key']
 
 
 def get_keywords():
-    with open("keywords.json") as f:
+    with open("files/keywords.json") as f:
         return json.load(f)
 
 

@@ -22,7 +22,7 @@ args = vars(parser.parse_args())
 
 
 def get_class_id():
-    with open("class2label.json") as f:
+    with open("files/class2label.json") as f:
         return json.load(f)
 
 
