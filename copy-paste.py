@@ -16,7 +16,7 @@ parser.add_argument("-s", "--segmentation", type=str, default='segmented_objects
 parser.add_argument("-o", "--out", type=str, default='augmented_images',
 	help="path to ADE20K directory to apply copy-paste")
 parser.add_argument("-n", "--num", type=int, default='100',
-	help="number of object instaces want to augmentation")
+	help="number of object instances of each class want to augmentation")
 
 args = vars(parser.parse_args())
 
@@ -88,11 +88,13 @@ if __name__ == "__main__":
             # print(f"object mask name: {obj_mask_name}")
             # print("--------------------------------")
 
+            # Annotation masks range [0, 150], where 0 refers to "other objects". 
+            ## Those pixels are not considered in the official evaluation.
             # Choose random position to paste
             x = random.randint(0, org_img.shape[1] - 1)
             y = random.randint(0, org_img.shape[0] - 1)
             new_img, new_mask = paste_object(org_img, org_mask, \
-                obj_img, obj_mask, class2label[obj_dir], (x, y))
+                obj_img, obj_mask, class2label[obj_dir] + 1, (x, y))
 
             count += 1
             filename = f"ADE_train_{count:0>8}"

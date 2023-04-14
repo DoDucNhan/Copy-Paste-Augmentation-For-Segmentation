@@ -1,4 +1,4 @@
-from utils import build_montage
+from utils import build_montage, build_montage_512
 import os.path as osp
 import argparse
 import logging
@@ -68,6 +68,11 @@ if __name__ == "__main__":
         # Check size and sort images to order: tall, wide, square large, square small
         sorted_imgs = []
         sorted_masks = []
+        # For each turn find the specific image
+        ## Turn 1: largest height as tall image
+        ## Turn 2: largest width as wide image
+        ## Turn 3: larger area as large square image
+        ## Final is small square image
         for t in range(3):
             idx = 0
             max_val = 0
@@ -97,11 +102,14 @@ if __name__ == "__main__":
         sorted_imgs.append(imgs.pop(0))
         sorted_masks.append(masks.pop(0))
         
+        # Montage image 224x224
+        # new_img = build_montage(img1, img2, img3, img4)
+        # new_mask = build_montage(mask1, mask2, mask3, mask4, True)
 
-        new_img = build_montage(img1, img2, img3, img4)
-        new_mask = build_montage(mask1, mask2, mask3, mask4, True)
+        # Montage image 512x512
+        new_img = build_montage_512(img1, img2, img3, img4)
+        new_mask = build_montage_512(mask1, mask2, mask3, mask4, True)
 
-        count += 1
         filename = f"ADE_train_{count:0>8}"
         logger.info(f"save image name: {filename}")
         logger.info("--------------------------------")
@@ -109,7 +117,7 @@ if __name__ == "__main__":
         save_mask_path = osp.join(out_ann_path, filename + ".png")
         cv2.imwrite(save_img_path, new_img)
         cv2.imwrite(save_mask_path, new_mask)
-        
+        count += 1
 
 
 

@@ -103,6 +103,9 @@ if __name__ == "__main__":
                 # Save object image and its mask
                 cropped_image = cropped_images[i]
                 cropped_mask = cropped_masks[i]
+                # Annotation masks range [0, 150], where 0 refers to "other objects". 
+                ## Those pixels are not considered in the official evaluation.
+                cropped_mask = np.where(cropped_masks == object_id, object_id + 1, 0)
                 # Deal with 2 specific classes: step and land by modifying from stairway and earth
                 if is_step:
                     height, width = cropped_masks.shape
@@ -112,10 +115,10 @@ if __name__ == "__main__":
                         cropped_image = cropped_image[crop_pos:, :, :]
                         cropped_mask = cropped_mask[crop_pos:, :]
 
-                    cropped_mask = np.where(cropped_masks[i] == object_id, class2label['step'], 0)
+                    cropped_mask = np.where(cropped_masks == object_id, class2label['step'] + 1, 0)
 
                 if is_land:
-                    cropped_mask = np.where(cropped_masks[i] == object_id, class2label['land'], 0)
+                    cropped_mask = np.where(cropped_masks == object_id, class2label['land'] + 1, 0)
 
                 cv2.imwrite(image_name, cropped_image)
                 cv2.imwrite(mask_name, cropped_mask)

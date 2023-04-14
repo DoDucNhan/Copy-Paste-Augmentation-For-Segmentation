@@ -1,8 +1,8 @@
 import cv2
-import mmcv
+# import mmcv
 import numpy as np
-from mmcv.parallel import collate, scatter
-from mmseg.datasets.pipelines import Compose
+# from mmcv.parallel import collate, scatter
+# from mmseg.datasets.pipelines import Compose
 
 #-----------------------PREPROCESSING--------------------------
 
@@ -249,7 +249,7 @@ def build_montage(img_square_s, img_square_l, img_tall, img_wide, mask=False):
         img_square_s: input image will be resize to 
             small square image with size 64x64
         img_square_l: input image will be resize to 
-            large square image with size 64x64160x160
+            large square image with size 160x160
         img_tall: input image will be resize to 
             tall image with size 160x64 
         img_wide: input image will be resize to 
@@ -277,5 +277,44 @@ def build_montage(img_square_s, img_square_l, img_tall, img_wide, mask=False):
     montage_image[64:, 0:64] = bottom_left_img
     montage_image[0:64:, 64:] = top_right_img
     montage_image[64:, 64:] = bottom_right_img
+
+    return montage_image
+
+
+def build_montage_512(img_square_s, img_square_l, img_tall, img_wide, mask=False):
+    """Generate a montage image with size of 512x512
+
+    Args:
+        img_square_s: input image will be resize to 
+            small square image with size 160x160
+        img_square_l: input image will be resize to 
+            large square image with size 352x352
+        img_tall: input image will be resize to 
+            tall image with size 352x160 
+        img_wide: input image will be resize to 
+            wide square image with size 160x352
+        mask: False if inputs are images, 
+            True if inputs are segmentation masks
+
+    Returns:
+        montage_image: the montage image with channel=3 if mask=False,
+            channel=1 of mask=True
+    """
+    # Start with black canvas to draw images onto
+    if mask:
+        montage_image = np.zeros(shape=(512, 512), dtype=np.uint8)
+    else:
+        montage_image = np.zeros(shape=(512, 512, 3), dtype=np.uint8)
+
+    # Resize images for montage
+    top_left_img = cv2.resize(img_square_s, (160, 160))
+    top_right_img = cv2.resize(img_wide, (352, 160))
+    bottom_left_img = cv2.resize(img_tall, (160, 352))
+    bottom_right_img = cv2.resize(img_square_l, (352, 352))
+
+    montage_image[0:160, 0:160] = top_left_img
+    montage_image[160:, 0:160] = bottom_left_img
+    montage_image[0:160:, 160:] = top_right_img
+    montage_image[160:, 160:] = bottom_right_img
 
     return montage_image

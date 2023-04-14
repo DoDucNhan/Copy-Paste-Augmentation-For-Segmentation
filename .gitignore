@@ -6,6 +6,9 @@ augmented_images/
 montage_images/
 configs/
 
+# Zip files
+*.zip
+
 # Pytorch model files
 *.pth
 
