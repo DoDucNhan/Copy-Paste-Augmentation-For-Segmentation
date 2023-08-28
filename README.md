@@ -22,7 +22,7 @@ pip install -r requirements.txt
 1. Crawl images
 
 ```bash
-python src/crawl.py --dir <path to saved folder> --num <number of images> --platfomr <google/flickr> --keywords <object keywords>
+python src/crawl.py --dir <path to saved folder> --num <number of images> --platform <google/flickr> --keywords <object keywords>
 ```
 
 2. Object segmentation
@@ -45,6 +45,6 @@ python src/montage.py --input <path to copy-paste images> --out <output folder>
 
 ***Note:*** The resolution for montage images can be changed by uncommenting the code in the `montage.py` script.
 
-## Model traing
+## Model training
 
 The working environment for model training is entirely on Google Colab. The training process is in this [notebook](https://colab.research.google.com/drive/1bPLZKN3hyWlGc9MC1UFfx-EzGv-4B4LY?usp=sharing). The training instruction for mmsegmentation toolbox can be found in this [link](https://mmsegmentation.readthedocs.io/en/main/)
